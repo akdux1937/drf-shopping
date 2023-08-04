@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import filters, generics, status
+from drf_spectacular.utils import extend_schema
 
 from shopping_list.api.permissions import (
     AllShoppingItemsShoppingListMembersOnly,
@@ -14,7 +15,15 @@ from shopping_list.api.serializers import AddMemberSerializer, RemoveMemberSeria
 from shopping_list.models import ShoppingItem, ShoppingList
 
 
+@extend_schema(
+    summary="List all the shopping lists.",
+    description="Returns the list of all shopping lists user is a member of. Each shopping list includes a few unpurchased shopping items. Users can add a new shopping list.",
+)
 class ListAddShoppingList(generics.ListCreateAPIView):
+    """
+    Returns the list of all shopping lists user is a member of. Each shopping list includes a few unpurchased shopping items.
+    Users can add a new shopping list.
+    """
     serializer_class = ShoppingListSerializer
 
     def preform_create(self, serializer):
@@ -61,6 +70,10 @@ class ListAddShoppingItem(generics.ListCreateAPIView):
 class ShoppingListAddMembers(APIView):
     permission_classes = [ShoppingListMembersOnly]
 
+    @extend_schema(
+        request=AddMemberSerializer,
+        responses=AddMemberSerializer
+    )
     def put(self, request, pk, format="json"):
         shopping_list = ShoppingList.objects.get(pk=pk)
         serializer = AddMemberSerializer(shopping_list, data=request.data)
@@ -76,6 +89,10 @@ class ShoppingListAddMembers(APIView):
 class ShoppingListRemoveMembers(APIView):
     permission_classes = [ShoppingListMembersOnly]
 
+    @extend_schema(
+        request=RemoveMemberSerializer,
+        responses=RemoveMemberSerializer
+    )
     def put(self, request, pk, format="json"):
         shopping_list = ShoppingList.objects.get(pk=pk)
         serializer = RemoveMemberSerializer(shopping_list, data=request.data)
